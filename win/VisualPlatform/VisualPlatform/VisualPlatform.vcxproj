@@ -40,7 +40,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>..\..\..\bin\</OutDir>
-    <IntDir>\</IntDir>
+    <IntDir>..\..\..\obj\$(Configuration)\</IntDir>
     <TargetName>$(Configuration)_$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

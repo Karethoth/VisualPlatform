@@ -3,6 +3,8 @@
 #define MAIN_HH
 
 #include <iostream>
+#include <fstream>
+#include <vector>
 
 
 #endif
