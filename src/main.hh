@@ -6,5 +6,8 @@
 #include <fstream>
 #include <vector>
 
+#include <jpeglib.h>
+
+#include "imageIO.hh"
 
 #endif

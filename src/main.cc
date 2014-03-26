@@ -51,7 +51,7 @@ int main( int argc, char **argv )
 	if( filepaths.size() <= 0 )
 	{
 		cout << "No inputs could be opened." << endl;
-
+		return 1;
 	}
 
 	// Let user know what files we were able to open
@@ -60,6 +60,35 @@ int main( int argc, char **argv )
 	{
 		cout << " - " << (*e).c_str() << endl;
 	}
+
+	cout << endl << "Generating copies.." << endl << endl;
+
+	for( auto e = filepaths.begin(); e != filepaths.end(); e++ )
+	{
+		shared_ptr<Image> img;
+
+		try
+		{
+			cout << endl << "Reading image '" << (*e).c_str() << "'.." << endl;
+
+			img = ReadJpegFile( *e );
+
+			cout << "Success, image info:" << endl;
+			cout << " - Size:  '" << img->info.width << "x" << img->info.height << "':" << endl;
+
+			cout << endl << "Writing it out as 'test.jpg'.." << endl;
+			WriteJpegFile( "test.jpg", *img, 50 );
+			cout << "Success." << endl;
+		}
+		catch( exception &e )
+		{
+			cout << "Failed! Reason was:" << endl;
+			cout << " \"" << e.what() << "\"" << endl;
+			continue;
+		}
+	}
+
+	cout << "Done!" << endl;
 
 	return 0;
 }
