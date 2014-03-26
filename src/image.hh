@@ -7,7 +7,7 @@
 #include <vector>
 
 
-enum ImageColorSpace
+enum ColorSpace
 {
 	COLOR_SPACE_UNKNOWN,
 	COLOR_SPACE_RBG,
@@ -16,12 +16,68 @@ enum ImageColorSpace
 };
 
 
+// Predefine structs
+struct ByteRGB;
+struct RGB;
+struct HSV;
+
+
+// 0..255 RGB presentation of pixel
+struct ByteRGB
+{
+	UINT8 r;
+	UINT8 g;
+	UINT8 b;
+
+	ByteRGB() : r(0), g(0), b(0) {};
+	ByteRGB( UINT8 _r, UINT8 _g, UINT8 _b ) : r(_r), g(_g), b(_b) {};
+
+	ByteRGB( const RGB& );
+
+	RGB ToRGB() const;
+};
+
+
+// 0..1 RGB presentation of pixel
+struct RGB
+{
+	float r;
+	float g;
+	float b;
+
+	RGB() : r(0), g(0), b(0) {};
+	RGB( float _r, float _g, float _b ) : r(_r), g(_g), b(_b) {};
+
+	RGB( const ByteRGB& );
+
+	ByteRGB ToByteRGB() const;
+};
+
+
+// HSV presentation of pixel
+struct HSV
+{
+	float h;
+	float s;
+	float v;
+
+	HSV() : h(0), s(0), v(0) {};
+	HSV( float _h, float _s, float _v ) : h(_h), s(_s), v(_v) {};
+};
+
+
+// Helpers
+HSV RGBtoHSV( const RGB& );
+RGB HSVtoRGB( const HSV& );
+
+
+
 struct ImageInfo
 {
-	unsigned int    width;
-	unsigned int    height;
-	unsigned char   bitdepth;
-	ImageColorSpace colorspace;
+	unsigned int  width;
+	unsigned int  height;
+	unsigned char bitdepth;
+	ColorSpace    colorspace;
 };
 
 
@@ -29,7 +85,11 @@ struct ImageInfo
 struct Image
 {
 	ImageInfo            info;
-	std::vector<JSAMPLE> data;
+	std::vector<ByteRGB> pixels;
+	std::vector<JSAMPLE> rawData;
+
+	void UpdatePixels();
+	void UpdateRawData();
 };
 
 
