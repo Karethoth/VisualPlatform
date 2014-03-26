@@ -24,9 +24,18 @@
     <None Include="..\..\..\.gitignore">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\..\..\src\image.hh">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="..\..\..\src\imageIO.hh">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\main.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\imageIO.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

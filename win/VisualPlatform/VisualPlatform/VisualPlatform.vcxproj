@@ -42,11 +42,15 @@
     <OutDir>..\..\..\bin\</OutDir>
     <IntDir>..\..\..\obj\$(Configuration)\</IntDir>
     <TargetName>$(Configuration)_$(ProjectName)</TargetName>
+    <IncludePath>..\..\lib\libjpeg-turbo\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\lib\libjpeg-turbo\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>..\..\..\bin\</OutDir>
     <IntDir>..\..\..\obj\$(Configuration)\</IntDir>
     <TargetName>$(Configuration)_$(ProjectName)</TargetName>
+    <IncludePath>..\..\lib\libjpeg-turbo\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\..\lib\libjpeg-turbo\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -56,6 +60,8 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>jpeg.lib;turbojpeg.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -70,14 +76,18 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>jpeg.lib;turbojpeg.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="..\..\..\.gitignore" />
     <None Include="..\..\..\README.md" />
+    <None Include="..\..\..\src\image.hh" />
+    <None Include="..\..\..\src\imageIO.hh" />
     <None Include="..\..\..\src\main.hh" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\src\imageIO.cc" />
     <ClCompile Include="..\..\..\src\main.cc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
