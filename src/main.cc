@@ -87,10 +87,12 @@ int main( int argc, char **argv )
 				(*it) = HSVtoRGB( tmp ).ToByteRGB();
 			}
 
-			img->UpdateRawData();
+			cout << endl << "Scaling the image.." << endl;
+			auto resized = img->ScaleTo( img->info.width * 2.1, img->info.height * 2.1 );
+			cout << "Success." << endl;
 
 			cout << endl << "Writing it out as 'test.jpg'.." << endl;
-			WriteJpegFile( "test.jpg", *img, 50 );
+			WriteJpegFile( "test.jpg", *resized, 100 );
 			cout << "Success." << endl;
 		}
 		catch( exception &e )

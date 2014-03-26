@@ -181,7 +181,7 @@ std::shared_ptr<Image> ReadJpegFile( const std::string &filename )
 	img->info.width      = cinfo.image_width;
 	img->info.height     = cinfo.image_height;
 	img->info.bitdepth   = 24;
-	img->info.colorspace = COLOR_SPACE_RBG;
+	img->info.colorspace = COLOR_SPACE_RGB;
 
 	jpeg_start_decompress( &cinfo );
 

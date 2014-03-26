@@ -5,12 +5,13 @@
 #include <iostream>
 #include <jpeglib.h>
 #include <vector>
+#include <memory>
 
 
 enum ColorSpace
 {
 	COLOR_SPACE_UNKNOWN,
-	COLOR_SPACE_RBG,
+	COLOR_SPACE_RGB,
 	COLOR_SPACE_HSV,
 	COLOR_SPACE_HSL
 };
@@ -90,6 +91,8 @@ struct Image
 
 	void UpdatePixels();
 	void UpdateRawData();
+
+	std::shared_ptr<Image> ScaleTo( unsigned int width, unsigned int height );
 };
 
 
