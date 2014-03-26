@@ -87,6 +87,7 @@
     <None Include="..\..\..\src\main.hh" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\src\image.cc" />
     <ClCompile Include="..\..\..\src\imageIO.cc" />
     <ClCompile Include="..\..\..\src\main.cc" />
   </ItemGroup>

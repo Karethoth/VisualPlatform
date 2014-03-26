@@ -76,6 +76,19 @@ int main( int argc, char **argv )
 			cout << "Success, image info:" << endl;
 			cout << " - Size:  '" << img->info.width << "x" << img->info.height << "':" << endl;
 
+			for( auto it=img->pixels.begin(); it != img->pixels.end(); it++ )
+			{
+				HSV tmp = RGBtoHSV( *it );
+
+				tmp.h += 180.f;
+				if( tmp.h > 360.f )
+					tmp.h -= 360.f;
+
+				(*it) = HSVtoRGB( tmp ).ToByteRGB();
+			}
+
+			img->UpdateRawData();
+
 			cout << endl << "Writing it out as 'test.jpg'.." << endl;
 			WriteJpegFile( "test.jpg", *img, 50 );
 			cout << "Success." << endl;

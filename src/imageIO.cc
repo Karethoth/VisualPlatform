@@ -83,7 +83,10 @@ void WriteJpegFile( const std::string &filename, const Image &image, int quality
 
 	while( cinfo.next_scanline < cinfo.image_height )
 	{
-		memcpy( row, &image.data[cinfo.next_scanline * rowStride],  sizeof( JSAMPLE ) * rowStride );
+		memcpy( row,
+		        &image.rawData[cinfo.next_scanline * rowStride],
+				sizeof( JSAMPLE ) * rowStride );
+
 		jpeg_write_scanlines( &cinfo, &row, 1 );
 	}
 
@@ -195,9 +198,12 @@ std::shared_ptr<Image> ReadJpegFile( const std::string &filename )
 		
 		for( int i=0; i < rowStride; ++i )
 		{
-			img->data.push_back( buffer[0][i] );
+			img->rawData.push_back( buffer[0][i] );
 		}
 	}
+
+	img->pixels = std::vector<ByteRGB>( img->info.width * img->info.height );
+	img->UpdatePixels();
 
 	/* Finish*/
 	jpeg_finish_decompress( &cinfo );
