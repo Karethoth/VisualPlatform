@@ -34,6 +34,11 @@ int main( int argc, char **argv )
 		return 1;
 	}
 
+	// Setup random number generator
+	mt19937 rng;
+	rng.seed( random_device()() );
+	uniform_int_distribution<uint32_t> random;
+	srand( random( rng ) );
 
 	// Generate vector of arguments
 	vector<string> filepaths;
@@ -76,22 +81,57 @@ int main( int argc, char **argv )
 			cout << "Success, image info:" << endl;
 			cout << " - Size:  '" << img->info.width << "x" << img->info.height << "':" << endl;
 
-			/*
-			for( auto it=img->pixels.begin(); it != img->pixels.end(); it++ )
-			{
-				HSV tmp = RGBtoHSV( *it );
-
-				tmp.h += 180.f;
-				if( tmp.h > 360.f )
-					tmp.h -= 360.f;
-
-				(*it) = HSVtoRGB( tmp ).ToByteRGB();
-			}*/
-
 			cout << endl << "Scaling the image.." << endl;
 			auto resized = img->ScaleTo( (unsigned int)(img->info.width  * 0.1f),
 			                             (unsigned int)(img->info.height * 0.1f) );
 			cout << "Success." << endl;
+
+
+
+			// Construct the elements for the k-means algorithm
+			std::vector<KMeans::Element<Vector2D>*> elements;
+
+			unsigned int posX=0;
+			unsigned int posY=0;
+			for( auto it  = resized->pixels.begin();
+			          it != resized->pixels.end();
+			          it++ )
+			{
+				HSV hsv = RGBtoHSV( *it );
+				HSVElement *element = new HSVElement();
+				element->hsv = hsv;
+				element->position.x = posX;
+				element->position.y = posY;
+				elements.push_back( element );
+
+				if( ++posX >= resized->info.width )
+				{
+					posX = 0;
+					posY++;
+				}
+			}
+
+			KMeans::KMeans<Vector2D> kmeans;
+			kmeans.Init( elements, 2 );
+
+			for( auto cluster  = kmeans.clusters.begin();
+			          cluster != kmeans.clusters.end();
+			          cluster++ )
+			{
+				auto tmpElement = new HSVElement();
+				tmpElement->position.x =  rand() % resized->info.width;
+				tmpElement->position.y =  rand() % resized->info.height;
+				tmpElement->hsv.h      = (rand() % 360) * 1.f;
+				tmpElement->hsv.s      = (rand() % 100) * 0.01f;
+				tmpElement->hsv.v      = (rand() % 100) * 0.01f;
+				(*cluster)->centroid = tmpElement;
+			}
+
+			long changes = 1;
+			while( (changes = kmeans.Update()) )
+			{
+				std::cout << "changes: " << changes << endl;
+			}
 
 			cout << endl << "Writing it out as 'test.jpg'.." << endl;
 			WriteJpegFile( "test.jpg", *resized, 100 );
