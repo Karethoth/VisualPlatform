@@ -84,6 +84,7 @@
     <None Include="..\..\..\README.md" />
     <None Include="..\..\..\src\image.hh" />
     <None Include="..\..\..\src\imageIO.hh" />
+    <None Include="..\..\..\src\kMeans.hh" />
     <None Include="..\..\..\src\main.hh" />
   </ItemGroup>
   <ItemGroup>

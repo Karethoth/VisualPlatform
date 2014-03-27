@@ -9,5 +9,8 @@
 #include <jpeglib.h>
 
 #include "imageIO.hh"
+#include "kMeans.hh"
+
 
 #endif
+

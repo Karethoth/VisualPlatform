@@ -178,10 +178,10 @@ std::shared_ptr<Image> Image::ScaleTo( unsigned int width, unsigned int height )
 
 	for( unsigned int y = 0; y < height; ++y )
 	{
-		float posY = (unsigned int)y*ratioY;
+		float posY = (float)(y*ratioY);
 		for( unsigned int x = 0; x < width; ++x )
 		{
-			float posX = x*ratioX;
+			float posX = (float)(x*ratioX);
 			img->pixels[y*width+x] = pixels[ (unsigned int)posY*info.width + (unsigned int)posX ];
 		}
 	}

@@ -76,6 +76,7 @@ int main( int argc, char **argv )
 			cout << "Success, image info:" << endl;
 			cout << " - Size:  '" << img->info.width << "x" << img->info.height << "':" << endl;
 
+			/*
 			for( auto it=img->pixels.begin(); it != img->pixels.end(); it++ )
 			{
 				HSV tmp = RGBtoHSV( *it );
@@ -85,10 +86,11 @@ int main( int argc, char **argv )
 					tmp.h -= 360.f;
 
 				(*it) = HSVtoRGB( tmp ).ToByteRGB();
-			}
+			}*/
 
 			cout << endl << "Scaling the image.." << endl;
-			auto resized = img->ScaleTo( img->info.width * 2.1, img->info.height * 2.1 );
+			auto resized = img->ScaleTo( (unsigned int)(img->info.width  * 0.1f),
+			                             (unsigned int)(img->info.height * 0.1f) );
 			cout << "Success." << endl;
 
 			cout << endl << "Writing it out as 'test.jpg'.." << endl;
