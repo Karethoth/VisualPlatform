@@ -82,10 +82,9 @@ int main( int argc, char **argv )
 			cout << " - Size:  '" << img->info.width << "x" << img->info.height << "':" << endl;
 
 			cout << endl << "Scaling the image.." << endl;
-			auto resized = img->ScaleTo( (unsigned int)(img->info.width  * 0.1f),
-			                             (unsigned int)(img->info.height * 0.1f) );
+			auto resized = img->ScaleTo( (unsigned int)(img->info.width  * 0.2f),
+			                             (unsigned int)(img->info.height * 0.2f) );
 			cout << "Success." << endl;
-
 
 
 			// Construct the elements for the k-means algorithm
@@ -97,10 +96,6 @@ int main( int argc, char **argv )
 			          it != resized->pixels.end();
 			          it++ )
 			{
-				if( resized->pixels.end() - it <= 2 )
-				{
-					std::cout << "asdasdasdsad\n";
-				}
 				HSV hsv = RGBtoHSV( *it );
 				HSVElement *element = new HSVElement();
 				element->clusterId  = -1;
@@ -119,7 +114,7 @@ int main( int argc, char **argv )
 			std::cout << "Generating elements for K-Means.." << endl;
 
 			KMeans::KMeans<HSVElement> kmeans;
-			kmeans.Init( elements, 5 );
+			kmeans.Init( elements, 5 ); // Five clusters
 
 			for( auto cluster  = kmeans.clusters.begin();
 			          cluster != kmeans.clusters.end();
@@ -174,10 +169,17 @@ int main( int argc, char **argv )
 			}
 			clusterImg.UpdateRawData();
 
-			cout << endl << "Writing it out as 'test.jpg'.." << endl;
-			WriteJpegFile( "test1.jpg", clusterImg, 100 );
-			WriteJpegFile( "test2.jpg", *resized, 100 );
+
+			std::string path = *e;
+			path[0] = 'o';
+			path[1] = 'u';
+			path[2] = 't';
+			path[3] = 'p';
+			cout << endl << "Writing it out as '" << path.c_str() << "'.." << endl;
+			WriteJpegFile( path, clusterImg, 100 );
 			cout << "Success." << endl;
+			resized.reset();
+			img.reset();
 		}
 		catch( exception &e )
 		{
