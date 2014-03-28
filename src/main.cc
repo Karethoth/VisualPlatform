@@ -25,67 +25,81 @@ vector<string> ValidateFilepaths( const vector<string>& filepaths )
 }
 
 
+std::shared_ptr<Image> GetWebcamImage( int device, SimpleCapParams &capture )
+{
+	doCapture( device );
+
+	auto img = std::make_shared<Image>();
+	img->info.width  = 320;
+	img->info.height = 240;
+	img->info.bitdepth   = 24;
+	img->info.colorspace = COLOR_SPACE_RGB;
+	img->pixels.resize(  img->info.width * img->info.height );
+	img->rawData.resize( img->info.width * img->info.height * 3 );
+
+	while( isCaptureDone( device ) == 0 )
+	{
+	}
+
+	for( auto index = 0; index < 320 * 240; ++index )
+	{
+		unsigned int rgba = (unsigned int)capture.mTargetBuf[index];
+		ByteRGB rgb;
+		rgb.r = (rgba>>24);
+		rgb.g = (rgba>>16);
+		rgb.b = (rgba>>8);
+		img->pixels[index] = rgb;
+	}
+	return img;
+}
+
 
 int main( int argc, char **argv )
 {
-	if( argc <= 1 )
-	{
-		cout << "Give me the filepath to the image or many images." << endl;
-		return 1;
-	}
-
 	// Setup random number generator
 	mt19937 rng;
 	rng.seed( random_device()() );
 	uniform_int_distribution<uint32_t> random;
 	srand( random( rng ) );
 
-	// Generate vector of arguments
-	vector<string> filepaths;
-	for( int i = argc-1; i > 0; --i )
-	{
-		char *filepath = argv[i];
-		filepaths.push_back( string( filepath ) );
-	}
-	
-	// Validate the filepaths
-	filepaths = ValidateFilepaths( filepaths );
 
-
-	// Make sure we got at least one valid path to work with
-	if( filepaths.size() <= 0 )
+	int devices = setupESCAPI();
+	if( !devices )
 	{
-		cout << "No inputs could be opened." << endl;
+		std::cerr << "Couldn't open any webcam devices!" << endl;
 		return 1;
 	}
 
-	// Let user know what files we were able to open
-	cout << endl << "Were able to open following file(s):" << endl;
-	for( auto e = filepaths.begin(); e != filepaths.end(); e++ )
+	// Initialize captures for webcam(s)
+	SimpleCapParams *captures = new SimpleCapParams[devices];
+	for( int dev=0; dev < devices; ++dev )
 	{
-		cout << " - " << (*e).c_str() << endl;
+		captures[dev].mWidth  = 320;
+		captures[dev].mHeight = 240;
+		captures[dev].mTargetBuf = new int[320 * 240];
+		if( initCapture( dev, &captures[dev] ) == 0 )
+		{
+			std::cout << "Capture failed - device may already be in use." << endl;
+		}
 	}
 
-	cout << endl << "Generating copies.." << endl << endl;
 
-	for( auto e = filepaths.begin(); e != filepaths.end(); e++ )
+	// Get 10 images from each webcam and handle them
+	for( int counter=0; counter < 10; ++counter )
+	for( int dev=0; dev < devices; ++dev )
 	{
-		shared_ptr<Image> img;
-
 		try
 		{
-			cout << endl << "Reading image '" << (*e).c_str() << "'.." << endl;
+			// Fetch image from the webcam
+			auto img = GetWebcamImage( dev, captures[dev] );
+			if( img == nullptr )
+			{
+				std::cerr << "Couldn't fetch the image!" << endl;
+				continue;
+			}
+			img->UpdateRawData();
 
-			img = ReadJpegFile( *e );
-
-			cout << "Success, image info:" << endl;
-			cout << " - Size:  '" << img->info.width << "x" << img->info.height << "':" << endl;
-
-			cout << endl << "Scaling the image.." << endl;
-			auto resized = img->ScaleTo( (unsigned int)(img->info.width  * 0.2f),
-			                             (unsigned int)(img->info.height * 0.2f) );
-			cout << "Success." << endl;
-
+			auto resized = img;
 
 			// Construct the elements for the k-means algorithm
 			std::vector<HSVElement*> elements;
@@ -93,8 +107,8 @@ int main( int argc, char **argv )
 			unsigned int posX=0;
 			unsigned int posY=0;
 			for( auto it  = resized->pixels.begin();
-			          it != resized->pixels.end();
-			          it++ )
+					  it != resized->pixels.end();
+					  it++ )
 			{
 				HSV hsv = RGBtoHSV( *it );
 				HSVElement *element = new HSVElement();
@@ -132,8 +146,8 @@ int main( int argc, char **argv )
 			{
 				std::cout << "changes: " << changes << endl;
 				for( auto cluster  = kmeans.clusters.begin();
-						  cluster != kmeans.clusters.end();
-						  cluster++ )
+				          cluster != kmeans.clusters.end();
+				          cluster++ )
 				{
 					HSVElement centroid = (*cluster)->centroid;
 				}
@@ -159,24 +173,27 @@ int main( int argc, char **argv )
 				ByteRGB    color   = HSVtoRGB( element.hsv );
 
 				for( auto index  = (*cluster)->indices.begin();
-						  index != (*cluster)->indices.end();
-						  index++ )
+				          index != (*cluster)->indices.end();
+				          index++ )
 				{
 					Vector2D position = kmeans.data[ *index ]->position;
 					clusterImg.pixels[ position.y * clusterImg.info.width +
-					                   position.x ] = color;
+										position.x ] = color;
 				}
 			}
 			clusterImg.UpdateRawData();
 
+			ostringstream oss;
+			oss << "outp/" << dev << "_" << counter << ".jpg";
+			string path = oss.str();
 
-			std::string path = *e;
-			path[0] = 'o';
-			path[1] = 'u';
-			path[2] = 't';
-			path[3] = 'p';
+			oss = ostringstream();
+			oss << "outp/" << dev << "_" << counter << "o.jpg";
+			string path2 = oss.str();
+
 			cout << endl << "Writing it out as '" << path.c_str() << "'.." << endl;
 			WriteJpegFile( path, clusterImg, 100 );
+			WriteJpegFile( path2, *img, 100 );
 			cout << "Success." << endl;
 			resized.reset();
 			img.reset();
@@ -185,8 +202,13 @@ int main( int argc, char **argv )
 		{
 			cout << "Failed! Reason was:" << endl;
 			cout << " \"" << e.what() << "\"" << endl;
-			continue;
 		}
+	}
+
+	for( int dev=0; dev < devices; ++dev )
+	{
+		deinitCapture( dev );
+		delete[] captures[dev].mTargetBuf;
 	}
 
 	cout << "Done!" << endl;

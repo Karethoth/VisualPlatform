@@ -3,6 +3,7 @@
 #define MAIN_HH
 
 #include <iostream>
+#include <sstream>
 #include <fstream>
 #include <vector>
 #include <random>
@@ -11,6 +12,8 @@
 
 #include "imageIO.hh"
 #include "kMeans.hh"
+
+#include "win/escapi/escapi.h"
 
 
 struct Vector2D
