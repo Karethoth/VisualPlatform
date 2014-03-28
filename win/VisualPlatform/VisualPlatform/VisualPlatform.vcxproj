@@ -91,6 +91,10 @@
     <ClCompile Include="..\..\..\src\image.cc" />
     <ClCompile Include="..\..\..\src\imageIO.cc" />
     <ClCompile Include="..\..\..\src\main.cc" />
+    <ClCompile Include="..\..\..\src\win\escapi\escapi.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\src\win\escapi\escapi.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
