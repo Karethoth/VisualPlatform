@@ -89,7 +89,7 @@ int main( int argc, char **argv )
 
 
 			// Construct the elements for the k-means algorithm
-			std::vector<KMeans::Element<Vector2D>*> elements;
+			std::vector<HSVElement*> elements;
 
 			unsigned int posX=0;
 			unsigned int posY=0;
@@ -97,8 +97,13 @@ int main( int argc, char **argv )
 			          it != resized->pixels.end();
 			          it++ )
 			{
+				if( resized->pixels.end() - it <= 2 )
+				{
+					std::cout << "asdasdasdsad\n";
+				}
 				HSV hsv = RGBtoHSV( *it );
 				HSVElement *element = new HSVElement();
+				element->clusterId  = -1;
 				element->hsv = hsv;
 				element->position.x = posX;
 				element->position.y = posY;
@@ -111,30 +116,67 @@ int main( int argc, char **argv )
 				}
 			}
 
-			KMeans::KMeans<Vector2D> kmeans;
-			kmeans.Init( elements, 2 );
+			std::cout << "Generating elements for K-Means.." << endl;
+
+			KMeans::KMeans<HSVElement> kmeans;
+			kmeans.Init( elements, 5 );
 
 			for( auto cluster  = kmeans.clusters.begin();
 			          cluster != kmeans.clusters.end();
 			          cluster++ )
 			{
-				auto tmpElement = new HSVElement();
-				tmpElement->position.x =  rand() % resized->info.width;
-				tmpElement->position.y =  rand() % resized->info.height;
-				tmpElement->hsv.h      = (rand() % 360) * 1.f;
-				tmpElement->hsv.s      = (rand() % 100) * 0.01f;
-				tmpElement->hsv.v      = (rand() % 100) * 0.01f;
-				(*cluster)->centroid = tmpElement;
+				HSVElement tmpElement = *(kmeans.data[rand() % kmeans.data.size()]);
+				tmpElement.clusterId  = (*cluster)->id;
+				(*cluster)->centroid  = tmpElement;
 			}
+
+			std::cout << "Done, now finding the clusters..." << endl;
 
 			long changes = 1;
-			while( (changes = kmeans.Update()) )
+			do
 			{
 				std::cout << "changes: " << changes << endl;
+				for( auto cluster  = kmeans.clusters.begin();
+						  cluster != kmeans.clusters.end();
+						  cluster++ )
+				{
+					HSVElement centroid = (*cluster)->centroid;
+				}
+			} while( (changes = kmeans.Update()) );
+			std::cout << "Convergence found." << endl;
+
+
+
+			std::cout << endl << "Generating new image." << endl;
+			Image clusterImg;
+			clusterImg.info.width  = resized->info.width;
+			clusterImg.info.height = resized->info.height;
+			clusterImg.info.bitdepth   = 24;
+			clusterImg.info.colorspace = COLOR_SPACE_RGB;
+			clusterImg.pixels = resized->pixels;
+			clusterImg.rawData.resize( resized->info.width * resized->info.height * 3 );
+ 
+			for( auto cluster  = kmeans.clusters.begin();
+			          cluster != kmeans.clusters.end();
+			          cluster++ )
+			{
+				HSVElement element = (*cluster)->centroid;
+				ByteRGB    color   = HSVtoRGB( element.hsv );
+
+				for( auto index  = (*cluster)->indices.begin();
+						  index != (*cluster)->indices.end();
+						  index++ )
+				{
+					Vector2D position = kmeans.data[ *index ]->position;
+					clusterImg.pixels[ position.y * clusterImg.info.width +
+					                   position.x ] = color;
+				}
 			}
+			clusterImg.UpdateRawData();
 
 			cout << endl << "Writing it out as 'test.jpg'.." << endl;
-			WriteJpegFile( "test.jpg", *resized, 100 );
+			WriteJpegFile( "test1.jpg", clusterImg, 100 );
+			WriteJpegFile( "test2.jpg", *resized, 100 );
 			cout << "Success." << endl;
 		}
 		catch( exception &e )

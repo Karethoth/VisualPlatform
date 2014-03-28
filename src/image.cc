@@ -49,19 +49,28 @@ HSV RGBtoHSV( const RGB &rgb )
     if( max > 0.f )
 	{
         out.s = (delta / max);
-    } else
+    }
+	else
 	{
         out.s = 0.f;
         out.h = 0.f;
         return out;
     }
-    if( rgb.r >= max )
+	if( delta == 0 )
+	{
+		out.h = 0.f;
+	}
+    else if( rgb.r >= max )
+	{
         out.h = ( rgb.g - rgb.b ) / delta;
+	}
     else
-    if( rgb.g >= max )
-        out.h = 2.f + ( rgb.b - rgb.r ) / delta;
-    else
-        out.h = 4.f + ( rgb.r - rgb.g ) / delta;
+	{
+		if( rgb.g >= max )
+			out.h = 2.f + ( rgb.b - rgb.r ) / delta;
+		else
+			out.h = 4.f + ( rgb.r - rgb.g ) / delta;
+	}
 
     out.h *= 60.f;
 

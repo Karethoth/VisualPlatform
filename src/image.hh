@@ -42,12 +42,12 @@ struct ByteRGB
 // 0..1 RGB presentation of pixel
 struct RGB
 {
-	float r;
-	float g;
-	float b;
+	double r;
+	double g;
+	double b;
 
 	RGB() : r(0), g(0), b(0) {};
-	RGB( float _r, float _g, float _b ) : r(_r), g(_g), b(_b) {};
+	RGB( double _r, double _g, double _b ) : r(_r), g(_g), b(_b) {};
 
 	RGB( const ByteRGB& );
 
@@ -58,12 +58,12 @@ struct RGB
 // HSV presentation of pixel
 struct HSV
 {
-	float h;
-	float s;
-	float v;
+	double h;
+	double s;
+	double v;
 
 	HSV() : h(0), s(0), v(0) {};
-	HSV( float _h, float _s, float _v ) : h(_h), s(_s), v(_v) {};
+	HSV( double _h, double _s, double _v ) : h(_h), s(_s), v(_v) {};
 };
 
 

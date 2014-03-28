@@ -7,21 +7,22 @@
 
 namespace KMeans
 {
-	template<typename Position>
 	struct Element
 	{
-		Position position;
 		int clusterId;
-		virtual Position Distance( const Element<Position>& ) = 0;
+
+		virtual void  Add( const Element* )      = 0;
+		virtual void  Divide( const float )      = 0;
+		virtual float Distance( const Element* ) = 0;
 	};
 
 
 
-	template<typename Position>
+	template<typename ElementType>
 	struct Cluster
 	{
 		int id;
-		Element<Position> *centroid;
+		ElementType        centroid;
 		std::vector<long>  indices;
 
 
@@ -32,47 +33,44 @@ namespace KMeans
 		}
 
 
-		void UpdateCentroid( const std::vector<Element<Position>*> &data )
+		void UpdateCentroid( const std::vector<ElementType*> &data )
 		{
-			if( !centroid )
+			if( indices.size() <= 0 )
 			{
 				return;
 			}
-
-
-			Position mean;
+			ElementType mean;
 			for( auto ind  = indices.begin();
 			          ind != indices.end();
 			          ind++ )
 			{
-				mean += (data[*ind])->position;
+				mean.Add( data[*ind] );
 			}
-			mean /= (float)indices.size();
-			centroid->position = mean;
+			mean.Divide( indices.size() );
+			centroid = mean;
 		}
 	};
 
 
 
-	template<typename Position>
+	template<typename ElementType>
 	struct KMeans
 	{
-		std::vector<Cluster<Position>*> clusters;
-		std::vector<Element<Position>*> data;
+		std::vector<Cluster<ElementType>*> clusters;
+		std::vector<ElementType*> data;
 
 
-		template<typename Position>
-		void Init( std::vector<Element<Position>*> elements, int clusterCount )
+		void Init( const std::vector<ElementType*> &elements, int clusterCount )
 		{
 			data = elements;
-			clusters = std::vector<Cluster<Position>*>( clusterCount );
+			clusters = std::vector<Cluster<ElementType>*>( clusterCount );
 
 			int clusterId = 1;
 			for( auto cluster  = clusters.begin();
 			          cluster != clusters.end();
 			          cluster++ )
 			{
-				(*cluster) = new Cluster<Position>();
+				(*cluster) = new Cluster<ElementType>();
 				(*cluster)->id = clusterId++;
 
 				// Not setting the centroid!
@@ -81,8 +79,8 @@ namespace KMeans
 
 
 
-		template<typename Position>
-		Cluster<Position>* GetCluster( int id )
+		template<typename ElementType>
+		Cluster<ElementType>* GetCluster( int id )
 		{
 			for( auto cluster  = clusters.begin();
 			          cluster != clusters.end();
@@ -114,32 +112,33 @@ namespace KMeans
 			          it != data.end();
 			          it++ )
 			{
-				Cluster<Position> *best = (*clusters.begin());
-				Position bestDistance   = best->centroid->Distance( **it );
+				auto  best         = clusters.begin();
+				float bestDistance = (*best)->centroid.Distance( *it );
 
 				// Loop trough the clusters, we want to find the "closest" one.
 				for( auto cluster  = clusters.begin();
 						  cluster != clusters.end();
 						  cluster++ )
 				{
-					Position currDistance = (*cluster)->centroid->Distance( **it );
+					float currDistance = (*cluster)->centroid.Distance( *it );
 					if( currDistance >= bestDistance )
 					{
 						continue;
 					}
 
 					// This is the best cluster so far.
-					best         = *cluster;
+					best         = cluster;
 					bestDistance = currDistance;
 				}
 
 				// Set the cluster id, for the element.
 				// Also add the element id to the cluster.
-				(*it)->clusterId = best->id;
-				best->indices.push_back( it - data.begin() );
+				long oldClusterId = (*it)->clusterId;
+				(*it)->clusterId = (*best)->id;
+				(*best)->indices.push_back( it - data.begin() );
 
 				// Check if the best cluster isn't the same as the old one
-				if( best->id != (*it)->clusterId )
+				if( (*best)->id != oldClusterId )
 				{
 					changes++;
 				}
